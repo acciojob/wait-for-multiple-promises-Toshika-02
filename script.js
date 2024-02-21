@@ -1,18 +1,49 @@
 //your JS code here. If required.
+const tableBody = document.querySelector("#output");
 
-const getRandomDelay = (min, max) => Math.random() * (max - min) + min;
+// Create three Promises that resolve after a random time between 1 and 3 seconds
+const promises = [
+  new Promise((resolve) => setTimeout(() => resolve("Promise 1"), Math.floor(Math.random() * 3000) + 1000)),
+  new Promise((resolve) => setTimeout(() => resolve("Promise 2"), Math.floor(Math.random() * 3000) + 1000)),
+  new Promise((resolve) => setTimeout(() => resolve("Promise 3"), Math.floor(Math.random() * 3000) + 1000)),
+];
 
-const createPromise = id => new Promise(resolve => {
-    const delay = getRandomDelay(1, 3) * 1000;
-    setTimeout(() => resolve({ id, time: delay / 1000 }), delay);
-});
+// Add a row that spans 2 columns with the text "Loading..."
+const loadingRow = document.createElement("tr");
+const loadingCell = document.createElement("td");
+loadingCell.setAttribute("colspan", "2");
+loadingCell.textContent = "Loading...";
+loadingRow.appendChild(loadingCell);
+tableBody.appendChild(loadingRow);
 
-const promises = [1, 2, 3].map(createPromise);
-
+// Use Promise.all to wait for all the Promises to resolve
 Promise.all(promises)
-    .then(results => {
-        const total = results.reduce((acc, cur) => acc + cur.time, 0);
-        document.getElementById("output").innerHTML = results.map(({id, time}) => `<tr><td>Promise ${id}</td><td>${time.toFixed(3)}</td></tr>`).join('') + `<tr><td>Total</td><td>${total.toFixed(3)}</td></tr>`;
-    })
-    .catch(error => console.error("Error:", error));
+  .then((results) => {
+    // Remove the loading row
+    tableBody.removeChild(loadingRow);
+
+    // Create a row for each Promise result
+    results.forEach((result) => {
+      const row = document.createElement("tr");
+      const promiseCell = document.createElement("td");
+      const timeCell = document.createElement("td");
+      promiseCell.textContent = result;
+      timeCell.textContent = (new Date() - startTime) / 1000; // Calculate time taken in seconds
+      row.appendChild(promiseCell);
+      row.appendChild(timeCell);
+      tableBody.appendChild(row);
+    });
+
+    // Calculate total time taken and add a row for it
+    const totalTimeRow = document.createElement("tr");
+    const totalTimeCell = document.createElement("td");
+    const totalDuration = (new Date() - startTime) / 1000;
+    totalTimeCell.setAttribute("colspan", "2");
+    totalTimeCell.textContent = `Total: ${totalDuration.toFixed(3)}s`;
+    totalTimeRow.appendChild(totalTimeCell);
+    tableBody.appendChild(totalTimeRow);
+  });
+
+// Save start time for calculating time taken
+const startTime = new Date();
 
